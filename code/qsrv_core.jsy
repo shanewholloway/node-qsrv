@@ -1,0 +1,58 @@
+import { path_resolve, path_join, path_relative } from './_builtins.jsy'
+
+const bind_as_url = (protocol, port) => addr => ::
+  const host = addr.includes(':') ? `[${addr}]` : addr
+  return `${protocol}//${host}:${port}/`
+
+
+export default qsrv_core_server
+export function qsrv_core_options(options) ::
+  return @{} __proto__: options
+    root: path_resolve @ options.root
+    fallback: path_resolve @ options.fallback
+    port: 0 || process.env.PORT || options.port 
+
+
+export function qsrv_core_server(options) ::
+  const websvr = options.create_web_server(options)
+  websvr.on @ 'request', options.bind_handler(options)
+
+  ::
+    const {port, listen_addr} = options
+    if listen_addr ::
+      websvr.listen @ +port, listen_addr
+    else websvr.listen @ +port
+
+  options.ready = new Promise @\ resolve, reject ::
+    websvr.on @ 'error', reject
+
+    websvr.on @ 'listening', @::
+      const {port, address, family} = websvr.address()
+      const protocol = undefined === websvr.requestCert ? 'http:' : 'https:'
+      const as_url = bind_as_url(protocol, port)
+      const url = as_url(address)
+      Object.assign @ options, @{} protocol, url, as_url
+      resolve @: url, port, address, family
+
+  return websvr
+
+
+export function qsrv_banner(options) ::
+  let {root, fallback, all_urls} = options || this
+
+  const cwd = process.cwd()
+  root = path_join @ path_relative @ cwd, root
+  fallback = path_join @ path_relative @ cwd, fallback
+
+  let msg = @ `
+    Quick Dev Server:
+      root: ${root}
+      fallback: ${fallback}
+
+    `
+
+  for (const url of all_urls.IPv4)
+    msg += `  ${url}\n`
+
+  return msg
+

@@ -1,0 +1,65 @@
+import { path_extname, path_join, fs, fs_p } from './_builtins.jsy'
+import mime_types from './mime.jsy'
+
+
+export default bind_qsrv_handler
+export function bind_qsrv_handler(options) ::
+  const ctx0 = options.ctx || null
+  const by_pathname = options.by_pathname || options
+  const {send_file, send_fallback} = options
+
+  return async function qsrv_handler(req, resp) ::
+    const url_obj = new URL(req.url, options.url)
+    const path_ext = path_extname(url_obj.pathname).toLowerCase()
+    const handler =
+      by_pathname[`path ${url_obj.pathname}`]
+      || @ path_ext ? send_file : send_fallback
+
+    const ctx = @{} __proto__: ctx0, options, req,
+      url_obj, path_ext
+
+    return handler(resp, await ctx)
+
+
+export function send_file(resp, ctx) ::
+  const {options, url_obj, path_ext} = ctx
+  const fname = path_join @ options.root, path_join('/', url_obj.pathname)
+  const mime = mime_types[path_ext.slice(1)] || 'application/octet-stream'
+
+  const rstream = fs.createReadStream(fname)
+  rstream.on @ 'error', @::
+    resp.writeHead(404)
+    resp.end()
+
+  rstream.on @ 'open', @::
+    resp.writeHead @ 200,
+      @{} 'Content-Type': mime
+          'Access-Control-Allow-Origin': '*'
+    rstream.pipe(resp)
+
+
+export async function send_fallback(resp, ctx) ::
+  const {url_obj, options} = ctx
+  const {fallback, src_prefix, src_suffix} = options
+
+  let src = fs_p.readFile(fallback)
+
+  try :: src = await src
+  catch err ::
+    resp.writeHead(404)
+    resp.end()
+    console.error @ `Error reading fallback: "${fallback}"`, err
+    return process.exit(-1)
+
+  resp.writeHead @
+    url_obj.pathname === '/' ? 200 : 301,
+    @{} 'Content-Type': 'text/html'
+        'Access-Control-Allow-Origin': '*'
+
+  if src_prefix ::
+    resp.write(src_prefix)
+  resp.write(src)
+  if src_suffix ::
+    resp.write(src_suffix)
+  resp.end()
+

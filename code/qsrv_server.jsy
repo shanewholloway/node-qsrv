@@ -1,0 +1,56 @@
+import { create_web_server } from './_builtins.jsy'
+import { bind_qsrv_handler, send_file, send_fallback } from './qsrv_handler.jsy'
+import { bind_livereload } from './qsrv_livereload.jsy'
+import { bind_exit_api, bind_change_api, bind_watcher, watchdir } from './qsrv_watcher.jsy'
+import { bind_urls_for_interfaces } from './net_utils.jsy'
+import { bind_lsdir } from './lsdir_json.jsy'
+import { qsrv_core_server, qsrv_core_options, qsrv_banner } from './qsrv_core.jsy'
+
+export const qsrv_prototype = @{}
+  __proto__: null
+  create_web_server,
+  send_file, send_fallback, bind_handler: bind_qsrv_handler,
+  bind_exit_api, bind_change_api, bind_watcher, watchdir,
+  bind_livereload
+  bind_lsdir
+  qsrv_banner
+
+export const qsrv_options = @{}
+  root: '.', fallback: 'index.html'
+  port: 0, listen_addr: '0.0.0.0'
+  reload: true,
+  lsdir: null,
+
+
+export default qsrv_server
+export async function qsrv_server(options={}) ::
+  options = qsrv_core_options @:
+    __proto__: qsrv_prototype
+    ... qsrv_options, ... options
+
+  await qsrv_liveness(options)
+  await qsrv_core_server(options)
+  bind_urls_for_interfaces(options)
+
+  if options.on_init ::
+    await options.on_init(options)
+
+  await options.ready
+  if options.on_ready ::
+    await options.on_ready(options)
+
+  return options
+
+
+export function qsrv_liveness(options) ::
+  options.bind_exit_api @ options
+  options.bind_change_api @ options
+  ::
+    let {reload, root, lsdir} = options
+    if reload ::
+      options.bind_livereload @ options
+      options.bind_watcher @ options,
+        true === reload ? [root] : reload
+
+    if lsdir ::
+      options.bind_lsdir(options, lsdir)

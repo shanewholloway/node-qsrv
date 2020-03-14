@@ -1,0 +1,70 @@
+import { fs_p, path_join, path_basename } from './_builtins.jsy'
+
+const lsdir_from_str = root => @: root,
+  file: `all-${path_basename(root)}.json`
+  accept: @=> true
+
+export async function bind_lsdir(options, lsdir_list) ::
+  options.add_lsdir = add_lsdir
+
+  if ! Array.isArray(lsdir_list) ::
+    lsdir_list = [lsdir_list]
+
+  for const lsdir of lsdir_list ::
+    add_lsdir(lsdir)
+
+  function add_lsdir(lsdir) ::
+    if 'string' === typeof lsdir ::
+      lsdir = lsdir_from_str @ lsdir
+
+    const {notify_changed, reload} = options
+    const update_lsdir = bind_update_lsdir @
+      lsdir, notify_changed
+
+    update_lsdir()
+
+    if reload ::
+      options.bind_watcher @ options,
+        [lsdir.root], update_lsdir
+
+    return update_lsdir
+
+
+export function bind_update_lsdir(lsdir, on_changed) ::
+  const on_refresh = lsdir.on_refresh || @ v=>v
+  let {root, file, accept} = lsdir
+  if ! accept ::
+    const extensions = new Set(lsdir.extensions)
+    accept = fname => extensions.has(fname)
+
+  const _as_ls_entry = fname => @:
+    fname, path: path_join(root, fname)
+
+  let tip = [{}]
+  return async function update_lsdir() ::
+    let raw_docs = fs_p.readdir(root)
+    try :: raw_docs = await raw_docs
+    catch err :: return
+
+    const ls_docs = raw_docs.filter(accept).sort()
+
+    if vec_eq(tip, ls_docs) ::
+      return // avoid writing when unchanged
+    tip = ls_docs
+
+    const entries = on_refresh @
+      ls_docs.map @ _as_ls_entry
+
+    if undefined !== entries ::
+      await fs_p.writeFile @ file,
+        JSON.stringify @ entries, null, 2
+      on_changed()
+
+
+function vec_eq(a, b) ::
+  const len = a.length
+  if len !== b.length :: return false
+  for let i=0; i<len; i++ ::
+    if a[i] != b[i] :: return false
+  return true
+

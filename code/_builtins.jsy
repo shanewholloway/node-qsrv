@@ -1,0 +1,19 @@
+export * as fs from 'fs'
+export {promises as fs_p} from 'fs'
+
+export @{}
+  extname as path_extname,
+  basename as path_basename,
+  join as path_join,
+  resolve as path_resolve,
+  relative as path_relative,
+from 'path'
+
+import {createServer as _create_https} from 'https'
+import {createServer as _create_http} from 'http'
+
+export function create_web_server({websvr, credentials}) ::
+  return websvr || credentials
+    ? _create_https(credentials)
+    : _create_http()
+

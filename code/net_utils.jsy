@@ -1,0 +1,18 @@
+import { networkInterfaces } from 'os'
+
+export function urls_for_interfaces(as_url, accept=()=>true) ::
+  const res = @{} IPv4: [], IPv6: []
+  for const [ifname, ifaddr_list] of Object.entries @ networkInterfaces() ::
+    for const ifaddr of ifaddr_list ::
+      const lst = res[ifaddr.family]
+      if lst && accept @ ifaddr, ifname ::
+        lst.push @ as_url @ ifaddr.address
+  return res
+
+export function bind_urls_for_interfaces(options) ::
+  options.all_urls = options.ready.then @=>
+    options.all_urls =
+      urls_for_interfaces @
+        options.as_url
+        options.accept_interafce
+

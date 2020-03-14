@@ -1,0 +1,92 @@
+import { fs, fs_p, path_join, path_basename, path_resolve } from './_builtins.jsy'
+
+
+export function bind_exit_api(options, signals='exit SIGINT SIGUSR1 SIGUSR2 SIGTERM') ::
+  if 'string' === typeof signals ::
+    signals = signals.split(/\s+/)
+
+  const at_exit = options.at_exit = new Promise @\ resolve ::
+    for const evt of signals ::
+      process.on @ evt, resolve
+
+  at_exit.then @=> setTimeout(process.exit, 50).unref()
+  return at_exit
+
+
+export function bind_change_api(options) ::
+  const subs = []
+  Object.assign @ options, @{}
+    log_changed() ::
+      subs.push @=> console.log @ '[spa change detected]'
+
+    when_changed(notify) ::
+      subs.push(notify)
+
+    notify_changed: debounced @::
+      const p = Promise.resolve()
+      for const fn of subs ::
+        p.then(fn)
+
+
+export function bind_watcher({watchdir, notify_changed}, watch_paths, on_changed) ::
+  on_changed = debounced @ on_changed || notify_changed
+
+  for let wpath of watch_paths ::
+    wpath = path_resolve(wpath)
+    watchdir @ wpath, on_changed
+
+
+export const watchdir = @
+  'linux' === process.platform ? watchdir_linux
+  : watchdir_builtin
+
+
+const _ignore_paths = new Set @#
+  '.git', '.hg', '.svn', '.cvs', 'node_modules'
+
+export async function watchdir_linux(root_path, cb) ::
+  const q = []
+  ::
+    const stat = await fs_p.stat(root_path).catch(_noop)
+    if ! stat || !stat.isDirectory() :: return
+    q.push @ root_path
+
+  const wopt = @{} recursive: true, persistent: false
+
+  while 0 !== q.length ::
+    const cur_path = q.shift()
+
+    if '.' === cur_path[0] || _ignore_paths.has @ path_basename(cur_path) ::
+      continue
+
+    fs.watch @ cur_path, wopt, cb
+
+    const fs_dir = await fs_p.opendir(cur_path)
+    for await const dirent of fs_dir ::
+      const e_path = path_join @ cur_path, dirent.name
+      if dirent.isDirectory() ::
+        q.push @ e_path
+
+
+export async function watchdir_builtin(path, cb) ::
+  const stat = await fs_p.stat(root_path).catch(_noop)
+  if !stat || ! stat.isDirectory() :: return
+
+  const wopt = @{} recursive: true, persistent: false
+  return fs.watch @ path, wopt, cb
+
+
+export function debounced(cb, ts_duration=50) ::
+  let tid, ts, p0 = Promise.resolve()
+  return @::
+    ts = ts_duration + Date.now()
+    if ! tid :: p0.then(tick)
+
+  function tick() ::
+    const now = Date.now()
+    tid = clearTimeout(tid)
+    if ts >= now ::
+      tid = setTimeout @ tick, ts - now
+    else p0.then(cb)
+
+function _noop() ::

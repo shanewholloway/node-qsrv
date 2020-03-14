@@ -1,0 +1,46 @@
+{
+  "name": "qsrv",
+  "version": "0.0.1",
+  "description": "Quick web development server with live reloading and zero dependencies",
+  "license": "BSD-2-Clause",
+  "author": "Shane Holloway <shane.holloway@ieee.org>",
+  "homepage": "https://github.com/shanewholloway/node-qsrv#readme",
+  "bugs": {
+    "url": "https://github.com/shanewholloway/node-qsrv/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/shanewholloway/node-qsrv.git"
+  },
+  "bin": { "qsrv": "qsrv.cjs" },
+  "files": [
+    "cjs/",
+    "code/",
+    "esm/"
+  ],
+  "type": "module",
+  "main": "./cjs/index.cjs",
+  "module": "./esm/index.mjs",
+  "exports": {
+    "./": "./",
+    ".": {
+      "import": "./esm/index.mjs",
+      "require": "./cjs/index.cjs"
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "rollup": "^2.0.5",
+    "rollup-plugin-jsy-lite": "^1.5.3",
+    "qsrv": "file://."
+  },
+  "scripts": {
+    "clean": "rm -rf ./cjs/* ./esm/*",
+    "build": "rollup --config",
+    "watch": "npm -s run build -- --watch",
+    "pretest": "npm -s run build",
+    "test": "true"
+  }
+}
