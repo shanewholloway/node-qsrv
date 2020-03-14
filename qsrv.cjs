@@ -48,7 +48,6 @@ async function qsrv_main(argv = process.argv.slice(2), env = process.env) {
   if (QSRV_TLS_CERT) assign_creds(opt, '.', QSRV_TLS_KEY, 'cert')
   if (QSRV_TLS_KEY) assign_creds(opt, QSRV_TLS_KEY, 'key')
 
-  console.log(process.argv, opt)
   return await qsrv_sevrer(opt)
 }
 
