@@ -1,4 +1,4 @@
-import { path_resolve, path_join, path_relative } from './_builtins.jsy'
+import { path_resolve, cwd_relative } from './_builtins.jsy'
 
 const bind_as_url = (protocol, port) => addr => ::
   const host = addr.includes(':') ? `[${addr}]` : addr
@@ -38,16 +38,11 @@ export function qsrv_core_server(options) ::
 
 
 export function qsrv_banner(options) ::
-  let {root, fallback, all_urls} = options || this
-
-  const cwd = process.cwd()
-  root = path_join @ path_relative @ cwd, root
-  fallback = path_join @ path_relative @ cwd, fallback
-
+  const {root, fallback, all_urls} = options || this
   let msg = @ `
     Quick Dev Server:
-      root: ${root}
-      fallback: ${fallback}
+      root: ${cwd_relative(root)}
+      fallback: ${cwd_relative(fallback)}
 
     `
 

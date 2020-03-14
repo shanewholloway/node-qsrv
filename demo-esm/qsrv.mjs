@@ -7,5 +7,6 @@ qsrv_sevrer({
 }).then(spa => {
   spa.log_changed()
   console.log( spa.qsrv_banner() )
+  console.log( spa.lsdir )
 })
 
