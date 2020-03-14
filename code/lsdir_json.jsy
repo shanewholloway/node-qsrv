@@ -16,8 +16,7 @@ export function bind_lsdir(options, lsdir_list) ::
 
   function add_lsdir(lsdir) ::
     lsdir = bind_update_lsdir @
-      options, lsdir,
-      options.notify_changed
+      lsdir, options.notify_changed
 
     lsdir.update()
 
@@ -28,15 +27,14 @@ export function bind_lsdir(options, lsdir_list) ::
     return lsdir
 
 
-export function as_lsdir_obj(options, lsdir) ::
+export function as_lsdir_obj(lsdir) ::
   if 'string' === typeof lsdir ::
     lsdir = @{} root: lsdir
 
   let {root, file, accept, on_refresh} = lsdir
 
-  root = cwd_relative @ options.root, root
-  file = cwd_relative @ options.root,
-    file || `all-${path_basename(root)}.json`
+  root = cwd_relative @ root
+  file = cwd_relative @ file || `all-${path_basename(root)}.json`
 
   if ! accept ::
     let ext = lsdir.extensions || lsdir.ext
@@ -53,9 +51,9 @@ export function as_lsdir_obj(options, lsdir) ::
   return @{} ...lsdir, root, file, accept, on_refresh
 
 
-export function bind_update_lsdir(options, lsdir, on_changed) ::
+export function bind_update_lsdir(lsdir, on_changed) ::
   const {root, file, accept, on_refresh} =
-    lsdir = as_lsdir_obj(options, lsdir)
+    lsdir = as_lsdir_obj(lsdir)
 
   const _as_ls_entry = fname => @:
     fname, path: path_join(root, fname)

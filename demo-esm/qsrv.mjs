@@ -1,12 +1,8 @@
 #!/usr/bin/env node
 import qsrv_sevrer from 'qsrv'
 
-qsrv_sevrer({
-  port: 8080,
-  lsdir: ['./docs'],
-}).then(spa => {
-  spa.log_changed()
-  console.log( spa.qsrv_banner() )
-  console.log( spa.lsdir )
+const opt = { port: 8080, lsdir: ['./docs'] }
+qsrv_sevrer(opt).then(qsrv => {
+  qsrv.log_changed()
+  console.log( qsrv.banner() )
 })
-

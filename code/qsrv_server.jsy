@@ -8,12 +8,13 @@ import { qsrv_core_server, qsrv_core_options, qsrv_banner } from './qsrv_core.js
 
 export const qsrv_prototype = @{}
   __proto__: null
-  create_web_server,
+  create_web_server, banner: qsrv_banner
   send_file, send_fallback, bind_handler: bind_qsrv_handler,
-  bind_exit_api, bind_change_api, bind_watcher, watchdir,
-  bind_livereload
-  bind_lsdir
-  qsrv_banner
+
+  bind_exit_api, bind_change_api,
+  bind_watcher, watchdir,
+  bind_livereload,
+  bind_lsdir,
 
 export const qsrv_options = @{}
   root: '.', fallback: 'index.html'
