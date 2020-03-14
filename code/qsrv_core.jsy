@@ -10,7 +10,7 @@ export function qsrv_core_options(options) ::
   return @{} __proto__: options
     root: path_resolve @ options.root
     fallback: path_resolve @ options.fallback
-    port: 0 || process.env.PORT || options.port 
+    port: + (0 || options.port)
 
 
 export function qsrv_core_server(options) ::
@@ -41,7 +41,7 @@ export function qsrv_banner(options) ::
   const {root, fallback, all_urls} = options || this
   let msg = @ `
     Quick Dev Server:
-      root: ${cwd_relative(root)}
+      root: ${cwd_relative(root) || '.'}
       fallback: ${cwd_relative(fallback)}
 
     `
