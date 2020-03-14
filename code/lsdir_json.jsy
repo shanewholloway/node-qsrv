@@ -6,7 +6,7 @@ const _lsdir_file = root =>
 const _lsdir_from_str = root => @:
   root, file: _lsdir_file(root), accept: @=> true
 
-export async function bind_lsdir(options, lsdir_list) ::
+export function bind_lsdir(options, lsdir_list) ::
   options.add_lsdir = add_lsdir
 
   if ! Array.isArray(lsdir_list) ::
