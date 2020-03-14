@@ -4,7 +4,7 @@ const {readFileSync} = require('fs')
 const qsrv_sevrer = require('qsrv')
 
 const qsrv_argv = {
-  parse(argv=process.argv.slice(1)) {
+  parse(argv) {
     const opt = {}
     argv = Array.from(argv)
     while (argv.length) {
@@ -19,9 +19,11 @@ const qsrv_argv = {
   '--root' (opt, tip, argv) { opt.root = argv.shift() },
   '-f' (opt, tip, argv) { opt.fallback = argv.shift() },
   '--fallback' (opt, tip, argv) { opt.fallback = argv.shift() },
+  '--port' (opt, tip) { opt.port = + argv.shift() },
+  '--listen' (opt, tip) { opt.listen_addr = argv.shift() },
 
   '--' (opt, tip, argv) {
-    opt.lsdir = [ ... opt.lsdir, tip, ... argv.splice(0, argv.length) ]
+    opt.lsdir = [ ... (opt.lsdir || []), ... argv.splice(0, argv.length) ]
   },
 
   '--tls' (opt, tip, argv) { assign_creds(opt, argv.shift()) },
@@ -34,18 +36,19 @@ const qsrv_argv = {
 }
 
 
-async function qsrv_main(argv = process.argv.slice(1), env = process.env) {
+async function qsrv_main(argv = process.argv.slice(2), env = process.env) {
   const { QSRV_PORT, QSRV_TLS, QSRV_TLS_CERT, QSRV_TLS_KEY } = await env
 
   const opt = {
     lsdir: ['./docs'],
-    port: QSRV_PORT || 8080,
-    ... qsrv_argv.parse() }
+    port: QSRV_PORT ? +QSRV_PORT : 8080,
+    ... qsrv_argv.parse(argv) }
 
   if (QSRV_TLS) assign_creds(opt, QSRV_TLS)
   if (QSRV_TLS_CERT) assign_creds(opt, '.', QSRV_TLS_KEY, 'cert')
   if (QSRV_TLS_KEY) assign_creds(opt, QSRV_TLS_KEY, 'key')
 
+  console.log(process.argv, opt)
   return await qsrv_sevrer(opt)
 }
 
