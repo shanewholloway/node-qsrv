@@ -53,4 +53,6 @@ export function qsrv_liveness(options) ::
         true === reload ? [root] : reload
 
     if lsdir ::
-      options.bind_lsdir(options, lsdir)
+      options.lsdir =
+        options.bind_lsdir @ options, lsdir
+

@@ -1,8 +1,10 @@
 import { fs_p, path_join, path_basename } from './_builtins.jsy'
 
-const lsdir_from_str = root => @: root,
-  file: `all-${path_basename(root)}.json`
-  accept: @=> true
+const _lsdir_file = root =>
+  `all-${path_basename(root)}.json`
+
+const _lsdir_from_str = root => @:
+  root, file: _lsdir_file(root), accept: @=> true
 
 export async function bind_lsdir(options, lsdir_list) ::
   options.add_lsdir = add_lsdir
@@ -10,38 +12,58 @@ export async function bind_lsdir(options, lsdir_list) ::
   if ! Array.isArray(lsdir_list) ::
     lsdir_list = [lsdir_list]
 
-  for const lsdir of lsdir_list ::
-    add_lsdir(lsdir)
+  return lsdir_list.map(add_lsdir)
 
   function add_lsdir(lsdir) ::
-    if 'string' === typeof lsdir ::
-      lsdir = lsdir_from_str @ lsdir
+    lsdir = bind_update_lsdir @
+      lsdir, options.notify_changed
 
-    const {notify_changed, reload} = options
-    const update_lsdir = bind_update_lsdir @
-      lsdir, notify_changed
+    lsdir.update()
 
-    update_lsdir()
-
-    if reload ::
+    if options.reload ::
       options.bind_watcher @ options,
-        [lsdir.root], update_lsdir
+        [lsdir.root], lsdir.update
 
-    return update_lsdir
+    return lsdir
+
+
+export function as_lsdir_obj(lsdir) ::
+  if 'string' === typeof lsdir ::
+    lsdir = @{} root: lsdir
+
+  let {root, file, accept, on_refresh} = lsdir
+
+  if ! file ::
+    file = `all-${path_basename(root)}.json`
+
+  if ! accept ::
+    let ext = lsdir.extensions || lsdir.ext
+    if ext ::
+      if 'string' === typeof ext ::
+        ext = ext.split(/\s+/)
+      const extensions = new Set(ext)
+      accept = fname => extensions.has(fname)
+    else ::
+      accept = fname => fname && '.' !== fname[0]
+
+  if ! on_refresh :: on_refresh = v=>v
+
+  return @{} ...lsdir, root, file, accept, on_refresh
 
 
 export function bind_update_lsdir(lsdir, on_changed) ::
-  const on_refresh = lsdir.on_refresh || @ v=>v
-  let {root, file, accept} = lsdir
-  if ! accept ::
-    const extensions = new Set(lsdir.extensions)
-    accept = fname => extensions.has(fname)
+  const {root, file, accept, on_refresh} =
+    lsdir = as_lsdir_obj(lsdir)
 
   const _as_ls_entry = fname => @:
     fname, path: path_join(root, fname)
 
   let tip = [{}]
-  return async function update_lsdir() ::
+
+  lsdir.update = update_lsdir
+  return lsdir
+
+  async function update_lsdir() ::
     let raw_docs = fs_p.readdir(root)
     try :: raw_docs = await raw_docs
     catch err :: return
