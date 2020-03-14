@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const {resolve: path_resolve} = require('path')
+const {readFileSync} = require('fs')
 const qsrv_sevrer = require('qsrv')
 
 const qsrv_argv = {
@@ -53,9 +54,8 @@ function assign_creds(opt, base, attrs={cert:'cert.pem', key:'key.pem'}) {
   base = path_resolve(base || '.')
   attrs = {... attrs}
   for (const key in attrs)
-    attrs[key] = path_resolve(base, attrs[key])
+    attrs[key] = readFileSync(path_resolve(base, attrs[key]))
 
-  console.log({attrs})
   return opt.credentials = Object.assign(
     {}, opt.credentials, attrs)
 }
