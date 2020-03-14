@@ -17,7 +17,7 @@ export function bind_change_api(options) ::
   const subs = []
   Object.assign @ options, @{}
     log_changed() ::
-      subs.push @=> console.log @ '[spa change detected]'
+      subs.push @=> console.log @ '[QSRV change detected]'
 
     when_changed(notify) ::
       subs.push(notify)

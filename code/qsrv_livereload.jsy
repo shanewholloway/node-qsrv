@@ -8,12 +8,12 @@ export const livereload_script = lr_path => ::() `{
     lr.onopen = lr.onmessage
 
     const ts = new Date(evt.data)
-    console.log('%c[SPA]: reload %o s at %s',
+    console.log('%c[QSRV]: reload %o s at %s',
       _fmt, (ts-ts0)/1000, ts.toLocaleTimeString())
 
     location.reload(true) }
 
-  console.log('%c[SPA]: monitoring for changes', _fmt)
+  console.log('%c[QSRV]: monitoring for changes', _fmt)
   }`
 
 export function bind_livereload(options) ::
