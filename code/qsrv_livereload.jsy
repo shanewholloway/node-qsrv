@@ -1,34 +1,59 @@
 const timestamp_b36 = (ts_dur=1000) =>
   (0 | (Date.now() / ts_dur)).toString(36)
 
-export const livereload_script = lr_path => ::() `{
+const default_livereload_script = @\ lr_path ::
   const ts0 = new Date(), _fmt = 'color: orange; font-weight: bold'
-  const lr = new EventSource('${lr_path}')
-  lr.onmessage = evt => {
+
+  const lr = new EventSource(lr_path)
+  lr.onmessage = @\ evt ::
     lr.onopen = lr.onmessage
 
-    const ts = new Date(evt.data)
-    console.log('%c[QSRV]: reload %o s at %s',
-      _fmt, (ts-ts0)/1000, ts.toLocaleTimeString())
+    const info = JSON.parse @ evt.data || null
+    if Array.isArray(info) ::
+      const res = info.map @ lr_notify
+      if ! res.some(Boolean) ::
+        return
 
-    location.reload(true) }
+    lr_reload()
 
-  console.log('%c[QSRV]: monitoring for changes', _fmt)
-  }`
+  console.log @ '%c[QSRV]: monitoring for changes', _fmt
+
+  function lr_notify(detail) ::
+    let reload = true
+    const eobj = @{} detail, cancelable: true
+
+    console.info @ '%c[QSRV]: change for %o', _fmt, detail
+    for const evt_name of [`qsrv-${detail[0]}`, 'qsrv'] ::
+      if ! window.dispatchEvent @ new CustomEvent(evt_name, eobj) ::
+        reload = false
+
+    if reload ::
+      console.log @ '%c[QSRV]: reloading for %o', _fmt, detail
+    return reload
+
+  function lr_reload() ::
+    const ts = new Date()
+    console.log @ '%c[QSRV]: reload %o s at %s',
+      _fmt, (ts-ts0)/1000, ts.toLocaleTimeString()
+    location.reload(true)
+
 
 export function bind_livereload(options) ::
   const lr_path = 'dynamic' === options.reload
     ? `/livereload-${timestamp_b36(60000)}`
     : '/livereload'
 
-  const js_src = livereload_script(lr_path)
+  const js_src = options.livereload_script
+    || `{(${default_livereload_script})('${lr_path}')}`
+
   let src_suffix = (options.src_suffix || '')
   src_suffix += `<script>${js_src}</script>`
 
   const lr_subscribers = new Set()
   ::
     const on_ping = sse_broadcast.bind @
-      null, lr_subscribers, 'ping'
+      null, lr_subscribers, 'ping',
+        @=> new Date().toString()
     setInterval @ on_ping, 60000
 
   ::
@@ -67,8 +92,11 @@ export function bind_livereload(options) ::
       resp.end()
 
 
-function sse_broadcast(lr_subscribers, evt, data) ::
-  if ! data :: data = new Date().toISOString()
+function sse_broadcast(lr_subscribers, evt, info) ::
+  if 'function' === typeof info ::
+    info = info()
+
+  const data = JSON.stringify @ info
   for const resp of lr_subscribers ::
     resp.write @ `event: ${evt}\ndata: ${data}\n\n`
 

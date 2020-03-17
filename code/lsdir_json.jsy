@@ -1,4 +1,5 @@
 import { fs_p, path_join, path_basename, cwd_relative } from './_builtins.jsy'
+import { debounced } from './qsrv_watcher.jsy'
 
 const _lsdir_file = root =>
   `all-${path_basename(root)}.json`
@@ -18,12 +19,11 @@ export function bind_lsdir(options, lsdir_list) ::
     lsdir = bind_update_lsdir @
       lsdir, options.notify_changed
 
-    lsdir.update()
-
     if options.reload ::
       options.bind_watcher @ options,
-        [lsdir.root], lsdir.update
+        [lsdir.root], lsdir.notify_changed
 
+    lsdir.update()
     return lsdir
 
 
@@ -51,7 +51,7 @@ export function as_lsdir_obj(lsdir) ::
   return @{} ...lsdir, root, file, accept, on_refresh
 
 
-export function bind_update_lsdir(lsdir, on_changed) ::
+export function bind_update_lsdir(lsdir, notify_changed) ::
   const {root, file, accept, on_refresh} =
     lsdir = as_lsdir_obj(lsdir)
 
@@ -60,7 +60,10 @@ export function bind_update_lsdir(lsdir, on_changed) ::
 
   let tip = [{}]
 
-  lsdir.update = update_lsdir
+  lsdir.update = debounced @ update_lsdir
+
+  lsdir.notify_changed = @=>
+    notify_changed @# 'lsdir', file
   return lsdir
 
   async function update_lsdir() ::
@@ -80,7 +83,7 @@ export function bind_update_lsdir(lsdir, on_changed) ::
     if undefined !== entries ::
       await fs_p.writeFile @ file,
         JSON.stringify @ entries, null, 2
-      on_changed()
+      lsdir.notify_changed()
 
 
 function vec_eq(a, b) ::

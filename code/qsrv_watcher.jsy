@@ -15,6 +15,16 @@ export function bind_exit_api(options, signals='exit SIGINT SIGUSR1 SIGUSR2 SIGT
 
 export function bind_change_api(options) ::
   const subs = []
+  let updates = {}
+
+  const _tick_ = debounced @::
+    const p = Promise.resolve @
+      Object.values @ updates
+    updates = {}
+
+    for const fn of subs ::
+      p.then(fn)
+
   Object.assign @ options, @{}
     log_changed() ::
       subs.push @=> console.log @ '[QSRV change detected]'
@@ -22,18 +32,17 @@ export function bind_change_api(options) ::
     when_changed(notify) ::
       subs.push(notify)
 
-    notify_changed: debounced @::
-      const p = Promise.resolve()
-      for const fn of subs ::
-        p.then(fn)
+    notify_changed(change_args) ::
+      updates[change_args] = change_args
+      _tick_()
 
 
 export function bind_watcher({watchdir, notify_changed}, watch_paths, on_changed) ::
-  on_changed = debounced @ on_changed || notify_changed
+  on_changed = on_changed || notify_changed
 
-  for let wpath of watch_paths ::
-    wpath = path_resolve(wpath)
-    watchdir @ wpath, on_changed
+  for const wpath of watch_paths ::
+    const full_wpath = path_resolve(wpath)
+    watchdir @ full_wpath, @=> on_changed @# 'watch', wpath
 
 
 export const watchdir = @
