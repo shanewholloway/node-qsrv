@@ -1,6 +1,6 @@
 {
   "name": "qsrv",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Quick web development server with live reloading and zero dependencies",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
@@ -12,9 +12,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/shanewholloway/node-qsrv.git"
   },
-  "bin": {
-    "qsrv": "qsrv.cjs"
-  },
+  "bin": "qsrv.cjs",
   "files": [
     "cjs/",
     "code/",
