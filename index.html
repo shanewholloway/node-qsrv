@@ -8,6 +8,18 @@
   <!--
   <script async type='module' src='/demo.mjs'></script>
   -->
+  <script>
+    window.addEventListener('qsrv', evt => {
+      console.log('qsrv', evt.detail)
+    })
+    window.addEventListener('qsrv-lsdir', evt => {
+      console.log('qsrv-lsdir', evt.detail)
+      evt.preventDefault()
+    })
+    window.addEventListener('qsrv-watch', evt => {
+      console.log('qsrv-watch', evt.detail)
+    })
+  </script>
 </head>
 
 <body>
