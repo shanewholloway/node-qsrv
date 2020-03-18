@@ -21,7 +21,7 @@ export function bind_lsdir(options, lsdir_list) ::
 
     if options.reload ::
       options.bind_watcher @ options,
-        [lsdir.root], lsdir.notify_changed
+        [lsdir.root], lsdir.update
 
     lsdir.update()
     return lsdir
@@ -74,7 +74,11 @@ export function bind_update_lsdir(lsdir, notify_changed) ::
     const ls_docs = raw_docs.filter(accept).sort()
 
     if vec_eq(tip, ls_docs) ::
-      return // avoid writing when unchanged
+      // avoid writing json list when unchanged
+      // but assume the content might have changed
+      lsdir.notify_changed()
+      return false
+
     tip = ls_docs
 
     const entries = on_refresh @
@@ -84,6 +88,7 @@ export function bind_update_lsdir(lsdir, notify_changed) ::
       await fs_p.writeFile @ file,
         JSON.stringify @ entries, null, 2
       lsdir.notify_changed()
+      return true
 
 
 function vec_eq(a, b) ::
