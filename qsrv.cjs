@@ -3,6 +3,31 @@ const {resolve: path_resolve} = require('path')
 const {readFileSync} = require('fs')
 const qsrv_sevrer = require('qsrv')
 
+const help = {
+  '--root': ['[PATH]', 'set the root path for file serving', '.'],
+  '-f': 'alias for --fallback',
+  '--fallback': ['[index.html]', 'set the fallback html file', 'index.html'],
+
+  ' 0 ': true,
+
+  '--no-reload': 'disable reload watching',
+  '-w': 'alias for --watch',
+  '--watch': ['[PATH]', 'watch the path for changes', '{root}'],
+  '--': ['[... PATHS]', 'watch each path in the remaining arguments'],
+
+  ' 1 ': true,
+
+  '-p': 'alias for --port',
+  '--port': ['[PORT]', 'set the listening port', 8080],
+  '--listen': ['[IP4-ADDR]', 'set the default listing address', '0.0.0.0'],
+
+  ' 2 ': true,
+
+  '--tls': ['[PATH]', 'set the TLS path per convention. (See https://mkcert.dev)'],
+  '--cert': ['[PEM-FILE]', 'set the TLS public certificate path'],
+  '--key': ['[PEM-FILE]', 'set the TLS private key path'],
+}
+
 const qsrv_argv = {
   parse(argv) {
     const opt = {}
@@ -16,41 +41,105 @@ const qsrv_argv = {
     return opt
   },
 
+  '--help' (otp, tip, argv) {
+    const topic_list = 0 !== argv.length ? argv : Object.keys(help)
+
+    let output = [], max_dfn=0
+    for (let topic of topic_list) {
+      if (' ' === topic[0]) {
+        output.push({})
+        continue
+      }
+
+      if ('-' !== topic[0])
+        topic = help['-'+topic] ? '-'+topic
+          : '--'+topic
+
+      const info = help[topic]
+      let dfn=`${topic}`, msg
+
+      if (!info) {
+        msg = `No help for unknown option "${topic}"`
+      } else if (Array.isArray(info)) {
+        dfn += ` ${info[0]}`
+        msg = info[1]
+        if (undefined !== info[2])
+          msg += ` (default ${info[2]})`
+
+      } else if ('string' === typeof info) {
+        msg = info
+      }
+
+      max_dfn = Math.max(max_dfn, dfn.length)
+      output.push({dfn, msg})
+    }
+
+    console.log()
+    console.log('qsrv options:')
+    console.log()
+    for (const {dfn, msg} of output) {
+      if (dfn)
+        console.log(`  ${dfn.padEnd(1+max_dfn,' ')} ${msg}`)
+      else console.log()
+    }
+    console.log()
+    console.log()
+    process.exit(0)
+  },
+
   '--root' (opt, tip, argv) { opt.root = argv.shift() },
   '-f' (opt, tip, argv) { opt.fallback = argv.shift() },
   '--fallback' (opt, tip, argv) { opt.fallback = argv.shift() },
+  '-p' (opt, tip) { opt.port = + argv.shift() },
   '--port' (opt, tip) { opt.port = + argv.shift() },
   '--listen' (opt, tip) { opt.listen_addr = argv.shift() },
 
   '-w' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0,1)) },
   '--watch' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0,1)) },
+  '--' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0, argv.length)) },
   '--no-reload' (opt, tip, argv) { opt.reload = false },
-
-  '--' (opt, tip, argv) { _concat(opt, 'lsdir', argv.splice(0, argv.length)) },
 
   '--tls' (opt, tip, argv) { assign_creds(opt, argv.shift()) },
   '--cert' (opt, tip, argv) { assign_creds(opt, argv.shift(), 'cert') },
   '--key' (opt, tip, argv) { assign_creds(opt, argv.shift(), 'key') },
 
-  next_arg(opt, tip) { _concat(opt, 'lsdir', argv.splice(0,1)) },
+  '--debug' (opt, tip, argv) { opt.debug = true },
+
+  next_arg(opt, tip) { _concat(opt, 'lsdir', [tip]) },
 }
 
-function _concat(opt, key, rest) { return opt[key] = [... (opt[key] || []), ... rest] }
+function _concat(opt, key, rest) {
+  let prev = opt[key]
+  if (undefined === prev) prev = []
+  else if (!Array.isArray(prev)) {
+    console.error(`\nInvalid list argument for "${key}".\n  previous: %o\n  concat: %o\n\n`, prev, rest)
+    throw new Error(`Invalid list argument`)
+  }
+  return opt[key] = prev.concat(rest) }
 
 
 async function qsrv_main(argv = process.argv.slice(2), env = process.env) {
-  const { QSRV_PORT, QSRV_TLS, QSRV_TLS_CERT, QSRV_TLS_KEY } = await env
+  try {
+    const { QSRV_PORT, QSRV_TLS, QSRV_TLS_CERT, QSRV_TLS_KEY } = await env
 
-  const opt = {
-    lsdir: ['./docs'],
-    port: QSRV_PORT ? +QSRV_PORT : 8080,
-    ... qsrv_argv.parse(argv) }
+    const opt = {
+      lsdir: ['./docs'],
+      port: QSRV_PORT ? +QSRV_PORT : 8080,
+      ... qsrv_argv.parse(argv) }
 
-  if (QSRV_TLS) assign_creds(opt, QSRV_TLS)
-  if (QSRV_TLS_CERT) assign_creds(opt, QSRV_TLS_KEY, 'cert')
-  if (QSRV_TLS_KEY) assign_creds(opt, QSRV_TLS_KEY, 'key')
+    if (QSRV_TLS) assign_creds(opt, QSRV_TLS)
+    if (QSRV_TLS_CERT) assign_creds(opt, QSRV_TLS_KEY, 'cert')
+    if (QSRV_TLS_KEY) assign_creds(opt, QSRV_TLS_KEY, 'key')
 
-  return await qsrv_sevrer(opt)
+    if (opt.debug) console.dir(opt)
+    return await qsrv_sevrer(opt)
+
+  } catch (err) {
+    console.error('')
+    console.error(err)
+    console.error('')
+    process.exit(1)
+  }
 }
 
 

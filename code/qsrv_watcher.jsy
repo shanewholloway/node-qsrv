@@ -57,8 +57,12 @@ export async function watchdir_linux(root_path, cb) ::
   const q = []
   ::
     const stat = await fs_p.stat(root_path).catch(_noop)
-    if ! stat || !stat.isDirectory() :: return
-    q.push @ root_path
+    if ! stat :: return
+    if stat.isDirectory() ::
+      q.push @ root_path
+    else ::
+      // allow watching specific files (like index.html)
+      fs.watch @ root_path, wopt, cb
 
   const wopt = @{} recursive: true, persistent: false
 
@@ -79,7 +83,7 @@ export async function watchdir_linux(root_path, cb) ::
 
 export async function watchdir_builtin(path, cb) ::
   const stat = await fs_p.stat(root_path).catch(_noop)
-  if !stat || ! stat.isDirectory() :: return
+  if ! stat :: return
 
   const wopt = @{} recursive: true, persistent: false
   return fs.watch @ path, wopt, cb
