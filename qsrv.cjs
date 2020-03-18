@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const {version} = require('./package.json')
 const {resolve: path_resolve} = require('path')
 const {readFileSync} = require('fs')
 const qsrv_sevrer = require('qsrv')
@@ -75,7 +76,7 @@ const qsrv_argv = {
     }
 
     console.log()
-    console.log('qsrv options:')
+    console.log(`Quick Dev Server (qsrv v${version}) options:`)
     console.log()
     for (const {dfn, msg} of output) {
       if (dfn)
@@ -176,6 +177,8 @@ function assign_creds(opt, base, attrs) {
 
 function show_banner(qsrv) {
   qsrv.log_changed()
+  console.log()
+  console.log(`Quick Dev Server (qsrv v${version})`)
   console.log( qsrv.banner() )
 }
 

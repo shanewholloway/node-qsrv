@@ -40,7 +40,6 @@ export function qsrv_core_server(options) ::
 export function qsrv_banner(options) ::
   const {root, fallback, all_urls} = options || this
   let msg = @ `
-    Quick Dev Server:
       root: ${cwd_relative(root) || '.'}
       fallback: ${cwd_relative(fallback)}
 
