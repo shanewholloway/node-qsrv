@@ -9,7 +9,9 @@ export default qsrv_core_server
 export function qsrv_core_options(options) ::
   return @{} __proto__: options
     root: path_resolve @ options.root
-    fallback: path_resolve @ options.fallback
+    fallback: options.fallback
+      ? path_resolve @ options.fallback
+      : null
     port: + (0 || options.port)
 
 
@@ -41,7 +43,7 @@ export function qsrv_banner(options) ::
   const {root, fallback, all_urls} = options || this
   let msg = @ `
       root: ${cwd_relative(root) || '.'}
-      fallback: ${cwd_relative(fallback)}
+      fallback: ${fallback ? cwd_relative(fallback) : null}
 
     `
 

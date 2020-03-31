@@ -6,14 +6,15 @@ export default bind_qsrv_handler
 export function bind_qsrv_handler(options) ::
   const ctx0 = options.ctx || null
   const by_pathname = options.by_pathname || options
-  const {send_file, send_fallback} = options
+  const {send_file, fallback, send_index, send_fallback} = options
+  const send_default = fallback ? send_fallback : send_index
 
   return async function qsrv_handler(req, resp) ::
     const url_obj = new URL(req.url, options.url)
     const path_ext = path_extname(url_obj.pathname).toLowerCase()
     const handler =
       by_pathname[`path ${url_obj.pathname}`]
-      || @ path_ext ? send_file : send_fallback
+      || @ path_ext ? send_file : send_default
 
     const ctx = @{} __proto__: ctx0, options, req,
       url_obj, path_ext
@@ -36,6 +37,12 @@ export function send_file(resp, ctx) ::
       @{} 'Content-Type': mime
           'Access-Control-Allow-Origin': '*'
     rstream.pipe(resp)
+
+
+export function send_index(resp, ctx) ::
+  const {url_obj} = ctx
+  url_obj.pathname = path_join(url_obj.pathname, 'index.html')
+  return send_file(resp, ctx)
 
 
 export async function send_fallback(resp, ctx) ::

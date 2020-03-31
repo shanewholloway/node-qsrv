@@ -1,6 +1,6 @@
 {
   "name": "qsrv",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "description": "Quick web development server with live reloading and zero dependencies",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
@@ -33,7 +33,7 @@
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-node-resolve": "^7.1.1",
     "rollup": "^1.32.1",
-    "rollup-plugin-jsy-lite": "^1.5.3",
+    "rollup-plugin-jsy": "^1.6.0",
     "qsrv": "file://."
   },
   "scripts": {

@@ -52,7 +52,7 @@ export function as_lsdir_obj(lsdir) ::
 
 
 export function bind_update_lsdir(lsdir, notify_changed) ::
-  const {root, file, accept, on_refresh} =
+  const {root, file, accept} =
     lsdir = as_lsdir_obj(lsdir)
 
   const _as_ls_entry = fname => @:
@@ -81,7 +81,7 @@ export function bind_update_lsdir(lsdir, notify_changed) ::
 
     tip = ls_docs
 
-    const entries = on_refresh @
+    const entries = lsdir.on_refresh @
       ls_docs.map @ _as_ls_entry
 
     if undefined !== entries ::

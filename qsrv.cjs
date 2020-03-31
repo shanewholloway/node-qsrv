@@ -8,6 +8,7 @@ const help = {
   '--root': ['[PATH]', 'set the root path for file serving', '.'],
   '-f': 'alias for --fallback',
   '--fallback': ['[index.html]', 'set the fallback html file', 'index.html'],
+  '--no-fallback': 'disable fallback html file',
 
   ' 0 ': true,
 
@@ -91,6 +92,7 @@ const qsrv_argv = {
   '--root' (opt, tip, argv) { opt.root = argv.shift() },
   '-f' (opt, tip, argv) { opt.fallback = argv.shift() },
   '--fallback' (opt, tip, argv) { opt.fallback = argv.shift() },
+  '--no-fallback' (opt, tip, argv) { opt.fallback = null },
   '-p' (opt, tip) { opt.port = + argv.shift() },
   '--port' (opt, tip) { opt.port = + argv.shift() },
   '--listen' (opt, tip) { opt.listen_addr = argv.shift() },

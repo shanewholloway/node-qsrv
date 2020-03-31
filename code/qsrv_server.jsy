@@ -1,5 +1,5 @@
 import { create_web_server } from './_builtins.jsy'
-import { bind_qsrv_handler, send_file, send_fallback } from './qsrv_handler.jsy'
+import { bind_qsrv_handler, send_file, send_index, send_fallback } from './qsrv_handler.jsy'
 import { bind_livereload } from './qsrv_livereload.jsy'
 import { bind_exit_api, bind_change_api, bind_watcher, watchdir } from './qsrv_watcher.jsy'
 import { bind_urls_for_interfaces } from './net_utils.jsy'
@@ -9,7 +9,7 @@ import { qsrv_core_server, qsrv_core_options, qsrv_banner } from './qsrv_core.js
 export const qsrv_prototype = @{}
   __proto__: null
   create_web_server, banner: qsrv_banner
-  send_file, send_fallback, bind_handler: bind_qsrv_handler,
+  send_file, send_index, send_fallback, bind_handler: bind_qsrv_handler,
 
   bind_exit_api, bind_change_api,
   bind_watcher, watchdir,
