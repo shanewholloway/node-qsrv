@@ -2,6 +2,10 @@
 
 Quick web development server with live reloading and zero runtime dependencies.
 
+Please note that the `qsrv` web server is intended for rapid and iterative
+development -- not for deployment! Deploy using your favorite static web
+server and good DevSecOps practices.
+
 See [SPMDA][] for specific use of `qsrv` with web components and rapid idea
 sketching on the web.
 
@@ -30,7 +34,39 @@ Quick Dev Server
 
 ```
 
-### API
+
+### Web API
+
+Use live reloading on non-fallback pages by referencing the livereload script
+
+```html
+<!DOCTYPE html>
+...
+<script src='/livereload.js'></script>
+```
+
+- `/livereload` -- Server Sent Event endpoint for live reload change notifications
+- `/livereload.js` -- qsrv page reload script; this code is injected dynamically into fallback html.
+
+```javascript
+window.addEventListener('qsrv', evt => {
+  console.log('qsrv', evt.detail)
+})
+
+window.addEventListener('qsrv-lsdir', evt => {
+  console.log('qsrv-lsdir', evt.detail)
+
+  // prevent page reloading default action
+  evt.preventDefault()
+})
+
+window.addEventListener('qsrv-watch', evt => {
+  console.log('qsrv-watch', evt.detail)
+})
+```
+
+
+### Node API
 
 See [API example](./docs/qsrv_api_example.mjs)
 
@@ -80,4 +116,5 @@ function lsdir_examples() {
   ]
 }
 ```
+
 
