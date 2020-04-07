@@ -93,9 +93,9 @@ const qsrv_argv = {
   '-f' (opt, tip, argv) { opt.fallback = argv.shift() },
   '--fallback' (opt, tip, argv) { opt.fallback = argv.shift() },
   '--no-fallback' (opt, tip, argv) { opt.fallback = null },
-  '-p' (opt, tip) { opt.port = + argv.shift() },
-  '--port' (opt, tip) { opt.port = + argv.shift() },
-  '--listen' (opt, tip) { opt.listen_addr = argv.shift() },
+  '-p' (opt, tip, argv) { opt.port = + argv.shift() },
+  '--port' (opt, tip, argv) { opt.port = + argv.shift() },
+  '--listen' (opt, tip, argv) { opt.listen_addr = argv.shift() },
 
   '-w' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0,1)) },
   '--watch' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0,1)) },
