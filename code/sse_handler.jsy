@@ -1,0 +1,51 @@
+
+export function create_sse_context(td_ping=60000) ::
+  const sse_subscribers = new Set()
+
+  const sse_send_all = sse_send_many.bind @ null, sse_subscribers,
+    'message'
+
+  const sse_ping_all = sse_send_many.bind @ null, sse_subscribers,
+    'ping', @=> new Date().toISOString()
+
+
+  if td_ping ::
+    setInterval @
+      sse_ping_all, td_ping
+    .unref()
+
+
+  return @{}
+    sse_subscribers
+    sse_ping_all
+    sse_send_all
+    sse_send_many
+
+    sse_handler(resp, ctx) ::
+      resp.writeHead @ 200, @{}
+        'Access-Control-Allow-Origin': '*'
+        'Cache-Control': 'no-cache'
+        'Content-Type': 'text/event-stream'
+        'Connection': 'keep-alive'
+
+      sse_subscribers.add(resp)
+      ctx.req.once @ 'close', @::
+        sse_subscribers.delete(resp)
+
+      sse_send_many @ [resp], 'connected', true
+
+
+    sse_end() ::
+      for const resp of sse_subscribers ::
+        resp.end()
+      sse_subscribers.clear()
+
+
+function sse_send_many(sse_subscribers, evt, info) ::
+  if 'function' === typeof info ::
+    info = info()
+
+  const data = JSON.stringify @ info
+  for const resp of sse_subscribers ::
+    resp.write @ `event: ${evt}\ndata: ${data}\n\n`
+

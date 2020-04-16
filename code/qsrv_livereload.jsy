@@ -1,3 +1,5 @@
+import {create_sse_context} from './sse_handler.jsy'
+
 const timestamp_b36 = (ts_dur=1000) =>
   (0 | (Date.now() / ts_dur)).toString(36)
 
@@ -49,54 +51,23 @@ export function bind_livereload(options) ::
   let src_suffix = (options.src_suffix || '')
   src_suffix += `<script>${js_src}</script>`
 
-  const lr_subscribers = new Set()
-  ::
-    const on_ping = sse_broadcast.bind @
-      null, lr_subscribers, 'ping',
-        @=> new Date().toString()
-    setInterval @ on_ping, 60000
 
-  ::
-    const on_changed = sse_broadcast.bind @
-      null, lr_subscribers, 'message'
-    options.when_changed @ on_changed
+  const lr_sse = create_sse_context()
+  options.when_changed @
+    lr_sse.sse_send_all
 
-  :: // end the connections "nicely"
-    options.at_exit.then @::
-      for const resp of lr_subscribers ::
-        resp.end()
-      lr_subscribers.clear()
-
+  // end the connections "nicely"
+  options.at_exit.then @
+    lr_sse.sse_end
 
   Object.assign @ options, @{}
     src_suffix,
 
-    [`path ${lr_path}`](resp, ctx) ::
-      resp.writeHead @ 200, @{}
-        'Access-Control-Allow-Origin': '*'
-        'Cache-Control': 'no-cache'
-        'Content-Type': 'text/event-stream'
-        'Connection': 'keep-alive'
-
-      lr_subscribers.add(resp)
-      ctx.req.once @ 'close', @::
-        lr_subscribers.delete(resp)
-
-      sse_broadcast @ [resp], 'connected', true
-  
+    [`path ${lr_path}`]: lr_sse.sse_handler
     [`path ${lr_path}.js`](resp, ctx) ::
       resp.writeHead @ 200, @{}
         'Access-Control-Allow-Origin': '*'
         'Content-Type': 'applicaiton/javascript'
       resp.write(js_src)
       resp.end()
-
-
-function sse_broadcast(lr_subscribers, evt, info) ::
-  if 'function' === typeof info ::
-    info = info()
-
-  const data = JSON.stringify @ info
-  for const resp of lr_subscribers ::
-    resp.write @ `event: ${evt}\ndata: ${data}\n\n`
 
