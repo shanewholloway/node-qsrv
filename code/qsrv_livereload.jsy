@@ -54,7 +54,7 @@ export function bind_livereload(options) ::
 
   const lr_sse = create_sse_context()
   options.when_changed @
-    lr_sse.sse_send_all
+    lr_sse.sse_json_send_all
 
   // end the connections "nicely"
   options.at_exit.then @

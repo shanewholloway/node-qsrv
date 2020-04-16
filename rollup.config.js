@@ -5,7 +5,7 @@ const configs = []
 export default configs
 
 const sourcemap = true
-const external = ['path', 'fs', 'os', 'https', 'http']
+const external = ['path', 'fs', 'os', 'dgram', 'https', 'http']
 const plugins = [
   rpi_resolve({preferBuiltins: true}),
   rpi_jsy(),

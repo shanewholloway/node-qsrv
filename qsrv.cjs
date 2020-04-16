@@ -28,6 +28,11 @@ const help = {
   '--tls': ['[PATH]', 'set the TLS path per convention. (See https://mkcert.dev)'],
   '--cert': ['[PEM-FILE]', 'set the TLS public certificate path'],
   '--key': ['[PEM-FILE]', 'set the TLS private key path'],
+
+  ' 3 ': true,
+
+  '--dg': 'relay specified datagram ports',
+  '--dg-all': ['false', 'relay datagram ports as subscribed by the browser'],
 }
 
 const qsrv_argv = {
@@ -101,6 +106,9 @@ const qsrv_argv = {
   '--watch' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0,1)) },
   '--' (opt, tip, argv) { _concat(opt, 'reload', argv.splice(0, argv.length)) },
   '--no-reload' (opt, tip, argv) { opt.reload = false },
+
+  '--dg' (opt, tip, argv) { _concat(opt, 'dg_relay', argv.shift()) },
+  '--dg-all' (opt, tip, argv) { opt.dg_relay = true },
 
   '--tls' (opt, tip, argv) { assign_creds(opt, argv.shift()) },
   '--cert' (opt, tip, argv) { assign_creds(opt, argv.shift(), 'cert') },
