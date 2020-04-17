@@ -3,7 +3,8 @@ import { qsrv_core_server, qsrv_core_options, qsrv_banner } from './qsrv_core.js
 
 import { bind_qsrv_handler, send_file, send_index, send_fallback } from './qsrv_handler.jsy'
 import { bind_livereload } from './qsrv_livereload.jsy'
-import { bind_exit_api, bind_change_api, bind_watcher, watchdir } from './qsrv_watcher.jsy'
+import { bind_change_api, bind_watcher, watchdir } from './qsrv_watcher.jsy'
+import { bind_exit_api } from './at_exit.jsy'
 import { bind_urls_for_interfaces } from './net_utils.jsy'
 import { bind_lsdir } from './lsdir_json.jsy'
 import { bind_dgram_relay } from './qsrv_dgram_relay.jsy'
@@ -22,6 +23,7 @@ export const qsrv_prototype = @{}
 export const qsrv_options = @{}
   root: '.', fallback: 'index.html'
   port: 0, listen_addr: '0.0.0.0'
+  dg_listen_addr: '127.0.0.1'
   reload: true,
   lsdir: null,
 
@@ -36,6 +38,11 @@ export async function qsrv_server(options={}) ::
   await qsrv_core_server(options)
   bind_urls_for_interfaces(options)
 
+  await qsrv_composed_ready(options)
+  return options
+
+
+export async function qsrv_composed_ready(options) ::
   if options.on_init ::
     await options.on_init(options)
 

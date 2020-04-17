@@ -1,0 +1,15 @@
+
+export function bind_exit_api(options, signals='exit SIGINT SIGUSR1 SIGUSR2 SIGTERM') ::
+  if 'string' === typeof signals ::
+    signals = signals.split(/\s+/)
+
+  const at_exit = options.at_exit = new Promise @\ resolve ::
+    for const evt of signals ::
+      process.on @ evt, resolve
+
+  at_exit.then @=> _do_exit(0)
+  return at_exit
+
+function _do_exit(code=0) ::
+  setTimeout(process.exit, 50, code).unref()
+

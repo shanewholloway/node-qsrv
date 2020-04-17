@@ -1,36 +1,43 @@
 import {createSocket} from 'dgram'
 import {create_sse_context} from './sse_handler.jsy'
 
-export function bind_dgram_relay(options, dg_relay) ::
-  const allowed_ports = @
-    true === dg_relay ? null
-    : new Set @ dg_relay.map @ p => parseInt(p)
-
-  const is_acceptable = @
-    true === dg_relay ? @=> true
-    : dg_port => allowed_ports.has(dg_port)
-
-
+const _has_all = @{} has: @=> true
+export function bind_dgram_relay(options, dg_relay, dg_path='/dg_relay') ::
+  const allowed_ports = true === dg_relay ? _has_all : new Set()
   const sse_by_port = new Map()
-  options[`path /dg_relay`] = handle_dg_relay
+
+  options[`path ${dg_path}`] = handle_dg_relay
+
+  if dg_relay.length ::
+    for let port of dg_relay ::
+      port = +port
+      const sse = dg_sse_for(port)
+      if undefined !== sse ::
+        allowed_ports.add(port)
+
+  return handle_dg_relay
 
 
   function create_dg_relay(dg_port) ::
     const dg_sse = create_sse_context()
     dg_sse.dg_snk =
-      createSocket @ 'udp4',
+      createSocket @ 'udp4'
         @\ msg, pkt ::
           try :: msg = msg.toString('utf-8')
           catch err :: return
 
           dg_sse.sse_send_all @ msg
 
-      .bind @ dg_port, '127.0.0.1'
+      .unref()
+      .bind @ dg_port, options.dg_listen_addr || '127.0.0.1'
 
     return dg_sse
 
 
   function dg_sse_for(dg_port) ::
+    if ! dg_port || dg_port<=1024 || dg_port>=65536 ::
+      return
+
     let dg_sse = sse_by_port.get(dg_port)
     if undefined === dg_sse ::
       dg_sse = create_dg_relay(dg_port)
@@ -45,7 +52,7 @@ export function bind_dgram_relay(options, dg_relay) ::
     if ! dg_port || s_port !== `${dg_port}` ::
       return resp.writeHead(422).end @ 'invalid dg_relay port'
 
-    if ! is_acceptable(dg_port) ::
+    if ! allowed_ports.has(dg_port) ::
       return resp.writeHead(403).end @ 'forbidden dg_relay port'
 
     return dg_sse_for(dg_port).sse_handler(resp, ctx)

@@ -19,7 +19,9 @@ export function bind_qsrv_handler(options) ::
     const ctx = @{} __proto__: ctx0, options, req,
       url_obj, path_ext
 
-    return handler(resp, await ctx)
+    return handler 
+      ? handler(resp, await ctx)
+      : resp.writeHead(404).end()
 
 
 export function send_file(resp, ctx) ::

@@ -1,18 +1,6 @@
 import { fs, fs_p, path_join, path_basename, path_resolve } from './_builtins.jsy'
 
 
-export function bind_exit_api(options, signals='exit SIGINT SIGUSR1 SIGUSR2 SIGTERM') ::
-  if 'string' === typeof signals ::
-    signals = signals.split(/\s+/)
-
-  const at_exit = options.at_exit = new Promise @\ resolve ::
-    for const evt of signals ::
-      process.on @ evt, resolve
-
-  at_exit.then @=> setTimeout(process.exit, 50).unref()
-  return at_exit
-
-
 export function bind_change_api(options) ::
   const subs = []
   let updates = {}

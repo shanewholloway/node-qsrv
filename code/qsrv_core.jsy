@@ -1,11 +1,10 @@
-import { path_resolve, cwd_relative } from './_builtins.jsy'
+import { path_resolve, cwd_relative, create_web_server } from './_builtins.jsy'
 
 const bind_as_url = (protocol, port) => addr => ::
   const host = addr.includes(':') ? `[${addr}]` : addr
-  return `${protocol}//${host}:${port}/`
+  return `${protocol}//${host}:${port}`
 
 
-export default qsrv_core_server
 export function qsrv_core_options(options) ::
   return @{} __proto__: options
     root: path_resolve @ options.root
@@ -15,9 +14,12 @@ export function qsrv_core_options(options) ::
     port: + (0 || options.port)
 
 
-export function qsrv_core_server(options) ::
-  const websvr = options.create_web_server(options)
-  websvr.on @ 'request', options.bind_handler(options)
+export default qsrv_core_server
+export function qsrv_core_server(options, bind_handler) ::
+  const handler = (options.bind_handler || bind_handler) @ options
+
+  const websvr = (options.create_web_server || create_web_server) @ options
+  websvr.on @ 'request', handler
 
   ::
     const {port, listen_addr} = options
@@ -47,8 +49,9 @@ export function qsrv_banner(options) ::
 
     `
 
-  for (const url of all_urls.IPv4)
-    msg += `  ${url}\n`
+  if all_urls ::
+    for const url of all_urls.IPv4 ::
+      msg += `  ${url}\n`
 
   return msg
 

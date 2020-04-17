@@ -21,7 +21,7 @@ const plugins = [
 
 
 add_jsy('index', {exports: 'default'})
-add_jsy('cli_qsrv', {exports: 'default'})
+add_jsy('cli_qsrv')
 add_jsy('all')
 
 
