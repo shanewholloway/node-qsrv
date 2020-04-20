@@ -68,12 +68,12 @@ export async function watchdir_linux(root_path, cb) ::
         q.push @ e_path
 
 
-export async function watchdir_builtin(path, cb) ::
+export async function watchdir_builtin(root_path, cb) ::
   const stat = await fs_p.stat(root_path).catch(_noop)
   if ! stat :: return
 
   const wopt = @{} recursive: true, persistent: false
-  return fs.watch @ path, wopt, cb
+  return fs.watch @ root_path, wopt, cb
 
 
 export function debounced(cb, ts_duration=50) ::
