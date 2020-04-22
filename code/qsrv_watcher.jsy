@@ -42,7 +42,7 @@ const _ignore_paths = new Set @#
   '.git', '.hg', '.svn', '.cvs', 'node_modules'
 
 export async function watchdir_linux(root_path, cb) ::
-  const wopt = @{} recursive: true, persistent: false
+  const wopt = @{} persistent: false
   const q = []
   ::
     const stat = await fs_p.stat(root_path).catch(_noop)
