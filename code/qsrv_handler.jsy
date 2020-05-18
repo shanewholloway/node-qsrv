@@ -38,6 +38,7 @@ export function send_file(resp, ctx) ::
     resp.writeHead @ 200,
       @{} 'Content-Type': mime
           'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Headers': '*'
     rstream.pipe(resp)
 
 

@@ -67,6 +67,7 @@ export function bind_livereload(options) ::
     [`path ${lr_path}.js`](resp, ctx) ::
       resp.writeHead @ 200, @{}
         'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Headers': '*'
         'Content-Type': 'applicaiton/javascript'
       resp.write(js_src)
       resp.end()

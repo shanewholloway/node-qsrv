@@ -27,6 +27,7 @@ export function create_sse_context(td_ping=60000) ::
     sse_handler(resp, ctx) ::
       resp.writeHead @ 200, @{}
         'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Headers': '*'
         'Cache-Control': 'no-cache'
         'Content-Type': 'text/event-stream'
         'Connection': 'keep-alive'
