@@ -14,8 +14,13 @@ export function bind_change_api(options) ::
       p.then(fn)
 
   Object.assign @ options, @{}
-    log_changed() ::
-      subs.push @=> console.log @ '[QSRV change detected]'
+    log_changed() :: this.show_changed()
+    show_changed() ::
+      subs.push @\ batch ::
+        console.group('[QSRV change detected]')
+        for let lst of batch ::
+          console.log @ lst
+        console.groupEnd()
 
     when_changed(notify) ::
       subs.push(notify)
@@ -76,7 +81,7 @@ export async function watchdir_builtin(root_path, cb) ::
   return fs.watch @ root_path, wopt, cb
 
 
-export function debounced(cb, ts_duration=50) ::
+export function debounced(cb, ts_duration=250) ::
   let tid, ts, p0 = Promise.resolve()
   return @::
     ts = ts_duration + Date.now()

@@ -105,9 +105,15 @@ export async function qsrv_main(argv = process.argv.slice(2), env = process.env)
 
 
 export function show_banner(qsrv) ::
-  qsrv.log_changed()
-  console.log()
-  console.log @ `Quick Dev Server (qsrv v${version})`
-  console.log @  qsrv.banner()
+  let changes=0
 
+  display()
+  qsrv.when_changed @=> changes++
+  qsrv.show_changed()
 
+  setInterval( display, 60000 ).unref() // every minute
+
+  function display() ::
+    console.log('\x1Bc')
+    console.log @ `Quick Dev Server (qsrv v${version})`, {changes}
+    console.log @  qsrv.banner()
