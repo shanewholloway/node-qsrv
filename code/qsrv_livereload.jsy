@@ -46,10 +46,11 @@ export function bind_livereload(options) ::
     : '/livereload'
 
   const js_src = options.livereload_script
-    || `{(${default_livereload_script})('${lr_path}')}`
+    || `{(${default_livereload_script})('!~${lr_path}')}`
 
   let src_suffix = (options.src_suffix || '')
-  src_suffix += `<script>${js_src}</script>`
+  if js_src ::
+    src_suffix += `<script async data-livereload='qsrv' src='!~${lr_path}.js'></script>`
 
 
   const lr_sse = create_sse_context()
@@ -68,7 +69,7 @@ export function bind_livereload(options) ::
       resp.writeHead @ 200, @{}
         'Access-Control-Allow-Origin': '*'
         'Access-Control-Allow-Headers': '*'
-        'Content-Type': 'applicaiton/javascript'
+        'Content-Type': 'text/javascript'
       resp.write(js_src)
       resp.end()
 

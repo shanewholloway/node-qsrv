@@ -10,13 +10,14 @@ export function bind_qsrv_handler(options) ::
   const send_default = fallback ? send_fallback : send_index
 
   return async function qsrv_handler(req, resp) ::
-    const url_obj = new URL(req.url, options.url)
-    const path_ext = path_extname(url_obj.pathname).toLowerCase()
-    const handler =
-      by_pathname[`path ${url_obj.pathname}`]
+    let url_obj = new URL(req.url, options.url)
+    // add some path magic of `!~` to for reverse proxying to qsrv and livereload
+    let path_key = `path ${url_obj.pathname.replace(/^.*!~/,'')}`
+    let path_ext = path_extname(url_obj.pathname).toLowerCase()
+    let handler = by_pathname[path_key]
       || @ path_ext ? send_file : send_default
 
-    const ctx = @{} __proto__: ctx0, options, req,
+    let ctx = @{} __proto__: ctx0, options, req,
       url_obj, path_ext
 
     return handler 
@@ -45,6 +46,7 @@ export function send_file(resp, ctx) ::
 export function send_index(resp, ctx) ::
   const {url_obj} = ctx
   url_obj.pathname = path_join(url_obj.pathname, 'index.html')
+  ctx.path_ext = '.html'
   return send_file(resp, ctx)
 
 

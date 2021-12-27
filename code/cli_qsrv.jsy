@@ -89,7 +89,7 @@ export async function qsrv_main(argv = process.argv.slice(2), env = process.env)
     const opt = @{}
       port: +env.QSRV_PORT || 8080
       listen_addr: env.QSRV_ADDR || '0.0.0.0'
-      lsdir: ['./docs']
+      lsdir: [] // previously ['./docs']
 
       ... opt_qsrv_tls({}, env)
       ... qsrv_argv.parse(argv)
