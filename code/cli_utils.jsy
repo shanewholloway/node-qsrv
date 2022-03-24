@@ -9,7 +9,9 @@ export const opt_argv_context = @{}
     while argv.length ::
       const tip = argv.shift()
       if tip.startsWith('-') ::
-        this[tip](opt, tip, argv)
+        if 'function' === typeof this[tip] ::
+          this[tip](opt, tip, argv)
+        else console.warn @ 'WARN: Unknown option: %o', tip
       else ::
         this.next_arg(opt, tip)
 

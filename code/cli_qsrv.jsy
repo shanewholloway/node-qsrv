@@ -1,5 +1,5 @@
 import {version} from '../package.json'
-import qsrv_sevrer from 'qsrv'
+import qsrv_server from 'qsrv'
 
 import @{}
   opt_argv_context
@@ -14,6 +14,10 @@ const qsrv_help = @{}
   '-f': 'alias for --fallback'
   '--fallback': ['[index.html]', 'set the fallback html file', 'index.html']
   '--no-fallback': 'disable fallback html file'
+  '-q': 'alias for --no-banner'
+  '--no-banner': 'disable banner'
+  '--no-clear': 'disable clear and banner refresh'
+  '--show-ips': 'show all ips'
 
   ' 0 ': true
 
@@ -57,6 +61,11 @@ const qsrv_argv = @{}
   '--port' (opt, tip, argv) :: opt.port = + argv.shift()
   '--listen' (opt, tip, argv) :: opt.listen_addr = argv.shift()
 
+  '--show-ips' (opt, tip, argv) :: opt.show_ips = true
+  '--no-clear' (opt, tip, argv) :: opt.no_clear = true
+  '-q' (opt, tip, argv) :: opt.no_banner = true
+  '--no-banner' (opt, tip, argv) :: opt.no_banner = true
+
   '-w' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0,1)
   '--watch' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0,1)
   '--' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0, argv.length)
@@ -95,7 +104,7 @@ export async function qsrv_main(argv = process.argv.slice(2), env = process.env)
       ... qsrv_argv.parse(argv)
 
     if opt.debug :: console.dir(opt)
-    return await qsrv_sevrer(opt)
+    return await qsrv_server(opt)
 
   catch (err) ::
     console.error('')
@@ -107,13 +116,16 @@ export async function qsrv_main(argv = process.argv.slice(2), env = process.env)
 export function show_banner(qsrv) ::
   let changes=0
 
-  display()
+  if ! qsrv.no_banner ::
+    display()
+    if ! qsrv.no_clear ::
+      setInterval( display, 60000 ).unref() // every minute
+
   qsrv.when_changed @=> changes++
   qsrv.show_changed()
 
-  setInterval( display, 60000 ).unref() // every minute
-
   function display() ::
-    console.log('\x1Bc')
+    if ! qsrv.no_clear ::
+      console.log('\x1Bc')
     console.log @ `Quick Dev Server (qsrv v${version})`, {changes}
-    console.log @  qsrv.banner()
+    console.log @ qsrv.banner(qsrv)

@@ -46,10 +46,11 @@ export function qsrv_banner(options) ::
   let msg = @ `
       root: ${cwd_relative(root) || '.'}
       fallback: ${fallback ? cwd_relative(fallback) : null}
-
+      port: ${options.port}
     `
 
-  if all_urls ::
+  if options.show_ips && all_urls ::
+    msg += '\n'
     for const url of all_urls.IPv4 ::
       msg += `  ${url}\n`
 
