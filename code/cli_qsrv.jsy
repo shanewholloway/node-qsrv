@@ -31,6 +31,11 @@ const qsrv_help = @{}
   '--watch': ['[PATH]', 'watch the path for changes', '{root}']
   '--': ['[... PATHS]', 'watch each path in the remaining arguments']
 
+  ' 1.5 ': true
+
+  '-l': 'alias for --lsdir'
+  '--lsdir': ['[PATH]', 'create lsdir JSON for the watched path']
+
   ' 2 ': true
 
   '-p': ['[PORT]', 'alias for --port', '$QSRV_PORT or 8088']
@@ -66,10 +71,14 @@ const qsrv_argv = @{}
   '-q' (opt, tip, argv) :: opt.no_banner = true
   '--no-banner' (opt, tip, argv) :: opt.no_banner = true
 
+  next_arg(opt, tip) :: opt_concat @ opt, 'reload', [tip] // previously pushed to 'lsdir'
   '-w' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0,1)
   '--watch' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0,1)
   '--' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0, argv.length)
   '--no-reload' (opt, tip, argv) :: opt.reload = false
+
+  '-l' (opt, tip, argv) :: opt_concat @ opt, 'lsdir', argv.splice(0,1)
+  '--lsdir' (opt, tip, argv) :: opt_concat @ opt, 'lsdir', argv.splice(0,1)
 
   '--dg' (opt, tip, argv) :: opt_concat @ opt, 'dg_relay', argv.shift()
   '--dg-all' (opt, tip, argv) :: opt.dg_relay = true
@@ -79,8 +88,6 @@ const qsrv_argv = @{}
   '--key' (opt, tip, argv) :: opt_assign_creds @ opt, argv.shift(), 'key'
 
   '--debug' (opt, tip, argv) :: opt.debug = true
-
-  next_arg(opt, tip) :: opt_concat @ opt, 'lsdir', [tip]
 
 
 export function opt_qsrv_tls(opt, env) ::
