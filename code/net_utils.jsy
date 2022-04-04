@@ -14,5 +14,4 @@ export function bind_urls_for_interfaces(options) ::
     options.all_urls =
       urls_for_interfaces @
         options.as_url
-        options.accept_interafce
-
+        options.accept_interface
