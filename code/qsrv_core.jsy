@@ -12,6 +12,8 @@ export function qsrv_core_options(options) ::
       ? path_resolve @ options.fallback
       : null
     port: + (0 || options.port)
+    include_headers: @{}
+        'content-length': true === options.content_length
 
 
 export default qsrv_core_server

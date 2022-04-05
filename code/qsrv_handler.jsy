@@ -25,7 +25,7 @@ export function bind_qsrv_handler(options) ::
       : resp.writeHead(404).end()
 
 
-export function send_file(resp, ctx) ::
+export async function send_file(resp, ctx) ::
   const {options, url_obj, path_ext} = ctx
   const fname = path_join @ options.root, path_join('/', url_obj.pathname)
   const mime = mime_types[path_ext.slice(1)] || 'application/octet-stream'
@@ -35,11 +35,16 @@ export function send_file(resp, ctx) ::
     resp.writeHead(404)
     resp.end()
 
+  let headers = @{} 'Content-Type': mime
+      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Headers': '*'
+
+  if options.include_headers['content-length'] ::
+    console.log @ fname
+    headers['Content-Length'] = ( await fs_p.stat( fname ) ).size
+
   rstream.on @ 'open', @::
-    resp.writeHead @ 200,
-      @{} 'Content-Type': mime
-          'Access-Control-Allow-Origin': '*'
-          'Access-Control-Allow-Headers': '*'
+    resp.writeHead @ 200, headers
     rstream.pipe(resp)
 
 
