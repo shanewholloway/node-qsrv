@@ -35,9 +35,10 @@ export function send_file(resp, ctx) ::
     resp.writeHead(404)
     resp.end()
 
-  rstream.on @ 'open', @::
+  rstream.on @ 'open', @::>
     resp.writeHead @ 200,
       @{} 'Content-Type': mime
+          'Content-Length': ( await fs_p.stat( fname ) ).size
           'Access-Control-Allow-Origin': '*'
           'Access-Control-Allow-Headers': '*'
     rstream.pipe(resp)

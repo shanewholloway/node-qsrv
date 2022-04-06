@@ -64,7 +64,10 @@ const qsrv_argv = @{}
   '--no-fallback' (opt, tip, argv) :: opt.fallback = null
   '-p' (opt, tip, argv) :: opt.port = + argv.shift()
   '--port' (opt, tip, argv) :: opt.port = + argv.shift()
-  '--listen' (opt, tip, argv) :: opt.listen_addr = argv.shift()
+  '--listen' (opt, tip, argv) ::
+      const addr = argv.shift()
+      opt.listen_addr = addr
+      opt.accept_interface = ifaddr => addr === ifaddr.address
 
   '--show-ips' (opt, tip, argv) :: opt.show_ips = true
   '--no-clear' (opt, tip, argv) :: opt.no_clear = true
