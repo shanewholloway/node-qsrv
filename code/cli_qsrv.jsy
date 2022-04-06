@@ -48,9 +48,6 @@ const qsrv_help = @{}
   '--cert': ['[PEM-FILE]', 'set the TLS public certificate path', '$QSRV_TLS_CERT']
   '--key': ['[PEM-FILE]', 'set the TLS private key path', '$QSRV_TLS_KEY']
 
-  ' 999 ': true
-  '--content-length': 'Send Content-Length header.'
-
 
 const qsrv_argv = @{}
   __proto__: opt_argv_context
@@ -76,7 +73,6 @@ const qsrv_argv = @{}
   '--no-clear' (opt, tip, argv) :: opt.no_clear = true
   '-q' (opt, tip, argv) :: opt.no_banner = true
   '--no-banner' (opt, tip, argv) :: opt.no_banner = true
-  '--content-length' (opt, tip, argv) :: opt.content_length = true
 
   next_arg(opt, tip) :: opt_concat @ opt, 'reload', [tip] // previously pushed to 'lsdir'
   '-w' (opt, tip, argv) :: opt_concat @ opt, 'reload', argv.splice(0,1)
