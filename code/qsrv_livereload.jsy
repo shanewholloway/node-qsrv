@@ -4,6 +4,7 @@ const timestamp_b36 = (ts_dur=1000) =>
   (0 | (Date.now() / ts_dur)).toString(36)
 
 const default_livereload_script = @\ lr_path ::
+  let tid_reload
   const ts0 = new Date(), _fmt = 'color: orange; font-weight: bold'
 
   const lr = new EventSource(lr_path)
@@ -35,7 +36,19 @@ const default_livereload_script = @\ lr_path ::
 
   function lr_reload() ::
     const ts = new Date()
-    console.log @ '%c[QSRV]: reload %o s at %s',
+    let ms_duration = Math.max @ 250,
+      parseInt(localStorage.getItem('qsrv-livereload')) || 0
+
+    console.log @ '%c[QSRV]: reload %o s at %s after %o ms',
+      _fmt, (ts-ts0)/1000, ts.toLocaleTimeString(), ms_duration
+
+    // debounce the live_reload
+    tid_reload = clearTimeout(tid_reload)
+    tid_reload = setTimeout(_do_lr_reload, ms_duration)
+
+  function _do_lr_reload() ::
+    const ts = new Date()
+    console.log @ '%c[QSRV]: reloading %o s at %s',
       _fmt, (ts-ts0)/1000, ts.toLocaleTimeString()
     location.reload(true)
 
