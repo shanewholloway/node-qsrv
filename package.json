@@ -1,6 +1,6 @@
 {
   "name": "qsrv",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Quick web development server with live reloading and zero dependencies",
   "license": "BSD-2-Clause",
   "author": "Shane Holloway <shane.holloway@ieee.org>",
@@ -44,7 +44,7 @@
     "clean": "rm -rf ./cjs/* ./esm/*",
     "build": "rollup --config",
     "watch": "npm -s run build -- --watch",
-    "prepublishOnly": "npm -s run test",
+    "prepublishOnly": "npm run clean && npm run test",
     "pretest": "npm -s run build",
     "test": "true"
   }
