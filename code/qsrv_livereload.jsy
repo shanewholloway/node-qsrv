@@ -7,6 +7,9 @@ const default_livereload_script = @\ lr_path ::
   let tid_reload, ts_reload
   const ts0 = new Date(), _fmt = 'color: orange; font-weight: bold'
 
+  const ms_livereload = () => @
+    Math.max @ 250, parseInt(localStorage.getItem('qsrv-livereload')) || 0
+
   const lr = new EventSource(lr_path)
   lr.onmessage = @\ evt ::
     lr.onopen = lr.onmessage
@@ -19,7 +22,8 @@ const default_livereload_script = @\ lr_path ::
 
     lr_reload()
 
-  console.log @ '%c[QSRV]: monitoring for changes', _fmt
+  console.log @ '%c[QSRV]: monitoring.', _fmt,
+    @{} 'qsrv-livereload': ms_livereload()
 
   function lr_notify(detail) ::
     let reload = true
@@ -36,8 +40,7 @@ const default_livereload_script = @\ lr_path ::
 
   function lr_reload() ::
     ts_reload = new Date()
-    let ms_duration = Math.max @ 250,
-      parseInt(localStorage.getItem('qsrv-livereload')) || 0
+    let ms_duration = ms_livereload()
 
     console.log @ '%c[QSRV]: reload %o s at %s after %o ms',
       _fmt, (ts_reload-ts0)/1000, ts_reload.toLocaleTimeString(), ms_duration
